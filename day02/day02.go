@@ -4,6 +4,7 @@ import (
 	"bufio"
 	_ "embed"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -13,7 +14,10 @@ var input string
 
 func main() {
 	reports := parse()
-	part1(reports)
+	count := solve(reports, false)
+	fmt.Printf("\n(Part 1) %d reports are safe.\n\n", count)
+	count = solve(reports, true)
+	fmt.Printf("\n(Part 2) %d reports are safe after dampening.\n\n", count)
 }
 
 func parse() (reports [][]int) {
@@ -40,35 +44,83 @@ func parse() (reports [][]int) {
 	return reports
 }
 
-func part1(reports [][]int) {
+func solve(reports [][]int, dampen bool) int {
 	var safeReportCount int
 	for _, report := range reports {
-		if isSafe(report) {
-			fmt.Printf("%v → safe \n", report)
+		if isSafe(report, dampen) {
 			safeReportCount++
-		} else {
-			fmt.Printf("%v → not safe \n", report)
 		}
 	}
-
-	fmt.Printf("(Part 1) %d reports are safe.\n", safeReportCount)
+	return safeReportCount
 }
 
-func isSafe(report []int) bool {
-	last := report[0]
-	increasing := true
-	decreasing := true
-	for _, level := range report[1:] {
-		if last > level {
-			increasing = false
-		} else {
-			decreasing = false
+func isSafe(report []int, dampen bool) bool {
+	fmt.Print(report, " → ")
+	monotonic, failedAt := isMonotonic(report)
+	var maxDiff bool
+	if monotonic {
+		fmt.Print("(M) ")
+		maxDiff, failedAt = isMaxDiff(report)
+		if maxDiff {
+			fmt.Print("(D) ")
 		}
-		diff := last - level
-		if diff == 0 || diff > 3 || diff < -3 {
-			return false
+	}
+	if !monotonic || !maxDiff {
+		if dampen {
+			fmt.Printf("→ damped bei removing %d (%d) → ", failedAt, report[failedAt])
+			report = slices.Delete(report, failedAt, failedAt+1)
+			return isSafe(report, false)
+		}
+		fmt.Println("→ unsafe")
+		return false
+	}
+	fmt.Println("→ safe")
+	return true
+}
+
+const (
+	UNKNOWN = iota
+	INCREASING
+	DECREASING
+)
+
+func isMonotonic(report []int) (bool, int) {
+	monotonic := UNKNOWN
+	var last int
+	for i, level := range report {
+		if i == 0 {
+			last = level
+			continue
+		}
+		if level > last {
+			if monotonic == DECREASING {
+				return false, i
+			}
+			monotonic = INCREASING
+		}
+		if level < last {
+			if monotonic == INCREASING {
+				return false, i
+			}
+			monotonic = DECREASING
 		}
 		last = level
 	}
-	return increasing || decreasing
+	return true, 0
+}
+
+func isMaxDiff(report []int) (bool, int) {
+	var last int
+	for i, level := range report {
+		if i == 0 {
+			last = level
+			continue
+		}
+		diff := last - level
+		if diff < -3 || diff == 0 || diff > 3 {
+			return false, i
+		}
+		last = level
+	}
+	return true, 0
 }
