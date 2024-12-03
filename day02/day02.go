@@ -15,9 +15,9 @@ var input string
 func main() {
 	reports := parse()
 	count := solve(reports, false)
-	fmt.Printf("\n(Part 1) %d reports are safe.\n\n", count)
+	fmt.Printf("(Part 1) %d reports are safe.\n", count)
 	count = solve(reports, true)
-	fmt.Printf("\n(Part 2) %d reports are safe after dampening.\n\n", count)
+	fmt.Printf("(Part 2) %d reports are safe after dampening.\n", count)
 }
 
 func parse() (reports [][]int) {
@@ -55,27 +55,25 @@ func solve(reports [][]int, dampen bool) int {
 }
 
 func isSafe(report []int, dampen bool) bool {
-	fmt.Print(report, " → ")
-	monotonic, failedAt := isMonotonic(report)
-	var maxDiff bool
-	if monotonic {
-		fmt.Print("(M) ")
-		maxDiff, failedAt = isMaxDiff(report)
-		if maxDiff {
-			fmt.Print("(D) ")
+	monotonic := isMonotonic(report)
+	maxDiff := isMaxDiff(report)
+	if monotonic && maxDiff {
+		// fmt.Println(report, "→ safe")
+		return true
+	}
+	if dampen {
+		// fmt.Println(report, "→ unsafe (dampen)")
+		for i := range report {
+			newReport := slices.Clone(report)
+			newReport = slices.Delete(newReport, i, i+1)
+			// fmt.Printf("(%d) ", i)
+			if isSafe(newReport, false) {
+				return true
+			}
 		}
 	}
-	if !monotonic || !maxDiff {
-		if dampen {
-			fmt.Printf("→ damped bei removing %d (%d) → ", failedAt, report[failedAt])
-			report = slices.Delete(report, failedAt, failedAt+1)
-			return isSafe(report, false)
-		}
-		fmt.Println("→ unsafe")
-		return false
-	}
-	fmt.Println("→ safe")
-	return true
+	// fmt.Println(report, "→ unsafe")
+	return false
 }
 
 const (
@@ -84,7 +82,7 @@ const (
 	DECREASING
 )
 
-func isMonotonic(report []int) (bool, int) {
+func isMonotonic(report []int) bool {
 	monotonic := UNKNOWN
 	var last int
 	for i, level := range report {
@@ -94,22 +92,22 @@ func isMonotonic(report []int) (bool, int) {
 		}
 		if level > last {
 			if monotonic == DECREASING {
-				return false, i
+				return false
 			}
 			monotonic = INCREASING
 		}
 		if level < last {
 			if monotonic == INCREASING {
-				return false, i
+				return false
 			}
 			monotonic = DECREASING
 		}
 		last = level
 	}
-	return true, 0
+	return true
 }
 
-func isMaxDiff(report []int) (bool, int) {
+func isMaxDiff(report []int) bool {
 	var last int
 	for i, level := range report {
 		if i == 0 {
@@ -118,9 +116,9 @@ func isMaxDiff(report []int) (bool, int) {
 		}
 		diff := last - level
 		if diff < -3 || diff == 0 || diff > 3 {
-			return false, i
+			return false
 		}
 		last = level
 	}
-	return true, 0
+	return true
 }
