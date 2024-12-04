@@ -16,6 +16,7 @@ var input string
 func main() {
 	wordSalad := parse()
 	part1(wordSalad)
+	part2(wordSalad)
 }
 
 func parse() wordGrid {
@@ -114,6 +115,33 @@ func (w wordGrid) DiagonallyReverse() iter.Seq[[]byte] {
 			}
 			if len(col) > 0 {
 				if !yield(col) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func part2(wordSalad wordGrid) {
+	var count int
+
+	// horizontal
+	for line := range wordSalad.Xly() {
+		count += bytes.Count(line, []byte("MASMAS"))
+		count += bytes.Count(line, []byte("MASSAM"))
+		count += bytes.Count(line, []byte("SAMSAM"))
+		count += bytes.Count(line, []byte("SAMMAS"))
+	}
+
+	fmt.Printf("(Part 2) X-MAS found %d times \n", count)
+}
+
+func (w wordGrid) Xly() iter.Seq[[]byte] {
+	return func(yield func([]byte) bool) {
+		for y := range w[:len(w)-2] {
+			for x := range w[0][:len(w[0])-2] {
+				value := []byte{w[y][x], w[y+1][x+1], w[y+2][x+2], w[y+2][x], w[y+1][x+1], w[y][x+2]}
+				if !yield(value) {
 					return
 				}
 			}
