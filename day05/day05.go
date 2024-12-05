@@ -13,11 +13,11 @@ import (
 var input string
 
 func main() {
-	rules, updates := parse()
-	part1(rules, updates)
+	updates, rules := parse()
+	solve(updates, rules)
 }
 
-func parse() ([]PageOrderRule, [][]int) {
+func parse() ([][]int, []PageOrderRule) {
 	scanner := bufio.NewScanner(strings.NewReader(input))
 
 	var rules []PageOrderRule
@@ -59,28 +59,48 @@ func parse() ([]PageOrderRule, [][]int) {
 		panic(err)
 	}
 
-	return rules, updates
+	return updates, rules
 }
 
-func part1(rules []PageOrderRule, updates [][]int) {
-	var middlePageNumerSum int
+func solve(updates [][]int, rules []PageOrderRule) {
+	var part1Sum, part2Sum int
 
 	for _, update := range updates {
-		if checkUpdate(rules, update) {
-			middlePageNumerSum += update[len(update)/2]
+		if checkUpdate(update, rules) {
+			part1Sum += update[len(update)/2]
+		} else {
+			// fmt.Println(update, "")
+			fixedUpdate := fixUpdate(update, rules)
+			if !checkUpdate(fixedUpdate, rules) {
+				panic(fixedUpdate)
+			}
+			// fmt.Println(" → ", fixedUpdate)
+			part2Sum += fixedUpdate[len(fixedUpdate)/2]
 		}
 	}
 
-	fmt.Printf("(Part 1) Sum of middle page numbers from correctly-ordered updates: %d\n", middlePageNumerSum)
+	fmt.Printf("(Part 1) Sum of middle page numbers from correctly-ordered updates: %d\n", part1Sum)
+	fmt.Printf("(Part 2) Sum of middle page numbers from repaired updates: %d\n", part2Sum)
 }
 
-func checkUpdate(rules []PageOrderRule, update []int) bool {
+func checkUpdate(update []int, rules []PageOrderRule) bool {
 	for _, rule := range rules {
 		if !rule.Check(update) {
 			return false
 		}
 	}
 	return true
+}
+
+func fixUpdate(update []int, rules []PageOrderRule) []int {
+	for !checkUpdate(update, rules) {
+		for _, rule := range rules {
+			if !rule.Check(update) {
+				update = rule.Fix(update)
+			}
+		}
+	}
+	return update
 }
 
 type PageOrderRule struct {
@@ -95,4 +115,14 @@ func (r PageOrderRule) Check(update []int) bool {
 	}
 
 	return beforeIdx < afterIdx
+}
+
+func (r PageOrderRule) Fix(update []int) []int {
+	beforeIdx := slices.Index(update, r.before)
+	afterIdx := slices.Index(update, r.after)
+
+	update = slices.Delete(update, beforeIdx, beforeIdx+1)
+	update = slices.Insert(update, afterIdx, r.before)
+	// fmt.Println(update, " Fixed: ", r.before, r.after)
+	return update
 }
