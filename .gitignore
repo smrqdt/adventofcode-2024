@@ -23,3 +23,7 @@ go.work.sum
 
 # env file
 .env
+
+# https://adventofcode.com/2024/about#faq_copying
+input
+example
