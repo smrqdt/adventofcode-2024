@@ -4,6 +4,7 @@ import (
 	"bufio"
 	_ "embed"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -14,6 +15,7 @@ var input string
 func main() {
 	numbers := parse()
 	part1(numbers)
+	part2(numbers)
 }
 
 func parse() [][]int {
@@ -49,7 +51,7 @@ func part1(numbers [][]int) {
 	var totalCalibration int
 	var count int
 	for _, row := range numbers {
-		solvable, equation := findOperand(row[0], row[1], row[2:])
+		solvable, equation := findOperand(row[0], row[1], row[2:], false)
 		fmt.Printf("%d = %d %s", row[0], row[1], equation)
 		if solvable {
 			fmt.Println(" ✅")
@@ -60,25 +62,57 @@ func part1(numbers [][]int) {
 		}
 	}
 	fmt.Printf("(Part 1) total calibration result: %d\n", totalCalibration)
-	fmt.Printf("         %d out of %d solvable", count, len(numbers))
+	fmt.Printf("         %d out of %d solvable\n\n", count, len(numbers))
 }
 
-func findOperand(target, result int, operands []int) (bool, string) {
-	if len(operands) == 1 {
-		if result+operands[0] == target {
-			return true, fmt.Sprintf("+ %d", operands[0])
+func part2(numbers [][]int) {
+	var totalCalibration int
+	var count int
+	for _, row := range numbers {
+		solvable, equation := findOperand(row[0], row[1], row[2:], true)
+		fmt.Printf("%d = %d %s", row[0], row[1], equation)
+		if solvable {
+			fmt.Println(" ✅")
+			count++
+			totalCalibration += row[0]
+		} else {
+			fmt.Println(" ❌")
 		}
-		if result*operands[0] == target {
-			return true, fmt.Sprintf("* %d", operands[0])
-		}
-		return false, fmt.Sprintf("_ %d", operands[0])
 	}
-	if solvable, equation := findOperand(target, result+operands[0], operands[1:]); solvable {
+	fmt.Printf("(Part 2) total calibration result with concat: %d\n", totalCalibration)
+	fmt.Printf("         %d out of %d solvable\n", count, len(numbers))
+}
+
+func findOperand(target, result int, operands []int, withConcat bool) (bool, string) {
+	// fmt.Printf("findOperand(%d, %d, %v, %v)\n", target, result, operands, withConcat)
+	if len(operands) == 0 {
+		return result == target, ""
+	}
+
+	if solvable, equation := findOperand(target, result+operands[0], operands[1:], withConcat); solvable {
 		return true, fmt.Sprintf("+ %d %s", operands[0], equation)
 	}
-	solvable, equation := findOperand(target, result*operands[0], operands[1:])
+	solvable, equation := findOperand(target, result*operands[0], operands[1:], withConcat)
 	if solvable {
 		return true, fmt.Sprintf("* %d %s", operands[0], equation)
 	}
+	if withConcat {
+		solvable, equation = findOperand(target, ConcatInt(result, operands[0]), operands[1:], withConcat)
+		if solvable {
+			return true, fmt.Sprintf("|| %d %s", operands[0], equation)
+		}
+	}
 	return false, fmt.Sprintf("_ %d %s", operands[0], equation)
+}
+
+func ConcatInt(x, y int) int {
+	return x*int(math.Pow10(int(math.Log10(float64(y))+1))) + y
+}
+
+func ConcatIntByString(x, y int) int {
+	result, err := strconv.Atoi(fmt.Sprintf("%d%d", x, y))
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
