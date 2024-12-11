@@ -17,7 +17,7 @@ var input string
 
 func main() {
 	graph := parse()
-	part1(graph)
+	solve(graph)
 }
 
 func parse() (graph gr.Graph[int]) {
@@ -48,7 +48,7 @@ func parse() (graph gr.Graph[int]) {
 
 }
 
-func part1(graph gr.Graph[int]) {
+func solve(graph gr.Graph[int]) {
 	startNodes := graph.Find(0)
 	var paths [][]*gr.Node[int]
 	var score int
@@ -67,6 +67,7 @@ func part1(graph gr.Graph[int]) {
 		// fmt.Println(node, newScore, len(newPaths), distinctTargets, score)
 	}
 	fmt.Printf("(Part 1) Sum of trailhead scores: %d \n", score)
+	fmt.Printf("(Part 2) Sum of trailhead trails: %d \n", len(paths))
 }
 
 func findPathsToValue(node *gr.Node[int], target int, path []*gr.Node[int]) (paths [][]*gr.Node[int], found bool) {
