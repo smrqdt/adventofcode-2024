@@ -2,26 +2,33 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"iter"
-	"log"
 	"maps"
 	"math"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/charmbracelet/log"
+
+	"github.com/smrqdt/adventofcode-2024/pkg/helpers"
 )
 
 //go:embed input
 var input string
 
 func main() {
+	log.SetLevel(log.DebugLevel)
+	log.SetTimeFormat(time.TimeOnly)
+
 	stones := parse()
 	part1(slices.Clone(stones))
 	part2(slices.Clone(stones))
 }
 
 func parse() []int {
+	defer helpers.TrackTime(time.Now(), "parse()")
 	var stones []int
 	fields := strings.Fields(input)
 	for _, field := range fields {
@@ -35,9 +42,10 @@ func parse() []int {
 }
 
 func part1(stones []int) {
+	defer helpers.TrackTime(time.Now(), "part1()")
+
 	rounds := 25
-	for r := range rounds {
-		fmt.Printf("Round %3d: ", r)
+	for round := range rounds {
 		var inserts int
 		for i := range len(stones) {
 			stone := stones[i+inserts]
@@ -54,12 +62,14 @@ func part1(stones []int) {
 				stones[i+inserts] *= 2024
 			}
 		}
-		fmt.Printf("%6d\n", len(stones))
+		log.Info("Round finished", "round", round, "stones", len(stones))
 	}
-	fmt.Printf("(Part 1) Number of stones after %d rounds: %d\n", rounds, len(stones))
+	log.Warnf("(Part 1) Number of stones after %d rounds: %d", rounds, len(stones))
 }
 
 func part2(stones []int) {
+	defer helpers.TrackTime(time.Now(), "part2()")
+
 	rounds := 75
 
 	stoneCountsA := make(map[int]int)
@@ -70,9 +80,8 @@ func part2(stones []int) {
 
 	source := &stoneCountsA
 	target := &stoneCountsB
-	fmt.Println(source)
+	log.Debug(source)
 	for round := range rounds {
-		fmt.Printf("Round %2d: ", round)
 		clear(*target)
 		for stone, count := range *source {
 			digits := int(math.Log10(float64(stone))) + 1
@@ -87,10 +96,10 @@ func part2(stones []int) {
 				(*target)[stone*2024] += count
 			}
 		}
-		fmt.Printf("%18d \n", sum(maps.Values(*target)))
+		log.Info("Round finished", "round", round, "stones", sum(maps.Values(*target)))
 		source, target = target, source
 	}
-	fmt.Printf("(Part 2) Number of %d different stones after %d rounds: %d\n", len(*source), rounds, sum(maps.Values(*source)))
+	log.Printf("(Part 2) Number of %d different stones after %d rounds: %d", len(*source), rounds, sum(maps.Values(*source)))
 }
 
 func sum(seek iter.Seq[int]) (sum int) {
