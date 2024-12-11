@@ -90,7 +90,7 @@ func part2(stones []int) {
 		fmt.Printf("%18d \n", sum(maps.Values(*target)))
 		source, target = target, source
 	}
-	fmt.Printf("(Part 2) Number of stones after %d rounds: %d\n", rounds, sum(maps.Values(*source)))
+	fmt.Printf("(Part 2) Number of %d different stones after %d rounds: %d\n", len(*source), rounds, sum(maps.Values(*source)))
 }
 
 func sum(seek iter.Seq[int]) (sum int) {
