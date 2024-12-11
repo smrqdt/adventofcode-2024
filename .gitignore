@@ -27,3 +27,4 @@ go.work.sum
 # https://adventofcode.com/2024/about#faq_copying
 input
 example
+*.input

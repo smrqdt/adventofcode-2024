@@ -5,6 +5,14 @@ import (
 	"math"
 )
 
+var (
+	North      = Vector{0, -1}
+	EAST       = Vector{1, 0}
+	SOUTH      = Vector{0, 1}
+	WEST       = Vector{-1, 0}
+	DIRECTIONS = []Vector{North, EAST, SOUTH, WEST}
+)
+
 type Vector struct {
 	X, Y int
 }
