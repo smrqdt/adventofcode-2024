@@ -1,6 +1,7 @@
 package set
 
 import (
+	"fmt"
 	"iter"
 	"maps"
 )
@@ -63,4 +64,12 @@ func (s *Set[T]) Cardinality() int {
 
 func (s *Set[T]) All() iter.Seq[T] {
 	return maps.Keys(*s)
+}
+
+func (s Set[T]) String() string {
+	str := "Set(\n"
+	for v := range maps.Keys(s) {
+		str += fmt.Sprintf("    %v; \n", v)
+	}
+	return str + ")"
 }

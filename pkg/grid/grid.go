@@ -46,10 +46,17 @@ func (g Grid[T]) String() string {
 	var str string
 	for _, row := range g {
 		for _, value := range row {
-			if value != *new(T) {
-				str += "+"
-			} else {
-				str += "."
+			switch v := any(value).(type) {
+			case rune, byte:
+				str = fmt.Sprintf("%s%c", str, v)
+			case int:
+				str = fmt.Sprintf("%s %3d", str, v)
+			default:
+				if value != *new(T) {
+					str += "+"
+				} else {
+					str += "."
+				}
 			}
 		}
 		str += "\n"
@@ -128,27 +135,38 @@ func (g Grid[T]) FindAll(toFind T) (found []vector.Vector) {
 	return
 }
 
-func (g Grid[T]) GetNeighbour(v, dir vector.Vector) (neighPtr *vector.Vector, err error) {
+func (g Grid[T]) GetNeighbour(v, dir vector.Vector) (neigh vector.Vector, exists bool, err error) {
 	if !g.IsValid(v) {
-		return &vector.Vector{}, fmt.Errorf("Vector %v is not in Grid %#v: %w", v, g, OutOfBoundsError)
+		return vector.Vector{}, false, fmt.Errorf("Vector %v is not in Grid %#v: %w", v, g, OutOfBoundsError)
 	}
-	neigh := v.Add(dir)
+	neigh = v.Add(dir)
 	if !g.IsValid(neigh) {
-		return nil, nil
+		return neigh, false, nil
 	}
-	return &neigh, nil
+	return neigh, true, nil
+}
+
+func (g Grid[T]) GetNeighbourValue(v, dir vector.Vector) (nVec vector.Vector, value T, exists bool, err error) {
+	nVec, exists, err = g.GetNeighbour(v, dir)
+	if err != nil || !exists {
+		return nVec, *new(T), exists, err
+	}
+	value, err = g.Value(nVec)
+	if err != nil {
+		return nVec, value, exists, err
+	}
+	return
 }
 
 func (g Grid[T]) GetNeighbours(v vector.Vector) (neighbours []vector.Vector, err error) {
 	for _, dir := range vector.DIRECTIONS {
-		neigh, err := g.GetNeighbour(v, dir)
+		neigh, exists, err := g.GetNeighbour(v, dir)
 		if err != nil {
 			return nil, err
 		}
-		if neigh == nil {
-			continue
+		if exists {
+			neighbours = append(neighbours, neigh)
 		}
-		neighbours = append(neighbours, *neigh)
 	}
 	return neighbours, nil
 }

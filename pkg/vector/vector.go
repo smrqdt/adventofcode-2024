@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	North      = Vector{0, -1}
+	NORTH      = Vector{0, -1}
 	EAST       = Vector{1, 0}
 	SOUTH      = Vector{0, 1}
 	WEST       = Vector{-1, 0}
-	DIRECTIONS = []Vector{North, EAST, SOUTH, WEST}
+	DIRECTIONS = []Vector{NORTH, EAST, SOUTH, WEST}
 )
 
 type Vector struct {
@@ -42,5 +42,5 @@ func (v Vector) Abs() float64 {
 }
 
 func (v Vector) String() string {
-	return fmt.Sprintf("Vec[%d|%d]", v.X, v.Y)
+	return fmt.Sprintf("Vec(%d|%d)", v.X, v.Y)
 }
