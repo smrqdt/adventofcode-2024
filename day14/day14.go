@@ -5,11 +5,13 @@ import (
 	_ "embed"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
+	g "github.com/smrqdt/adventofcode-2024/pkg/grid"
 	"github.com/smrqdt/adventofcode-2024/pkg/helpers"
 	v "github.com/smrqdt/adventofcode-2024/pkg/vector"
 )
@@ -22,6 +24,7 @@ func main() {
 
 	robots := parse(input)
 	_ = part1(robots)
+	_ = part2(robots)
 }
 
 type Robot struct {
@@ -30,7 +33,7 @@ type Robot struct {
 }
 
 func (r *Robot) Move(seconds int, max v.Vector) {
-	r.Pos = r.Pos.Add(r.Vel.Scale(seconds))
+	r.Pos = r.Pos.Add(r.Vel.Scale(float64(seconds)))
 	r.Pos = v.Vector{X: r.Pos.X % max.X, Y: r.Pos.Y % max.Y}
 	if r.Pos.X < 0 {
 		r.Pos.X += max.X
@@ -104,4 +107,60 @@ func part1(robots []Robot) int {
 
 	log.Warnf("(Part 1) Safety Factor: %d\n", safetyFactor)
 	return safetyFactor
+}
+
+func part2(robots []Robot) int {
+	defer helpers.TrackTime(time.Now(), "part2()")
+
+	max := v.Vector{X: 101, Y: 103}
+
+	var safetyFactors []int
+
+	for seconds := range 100000 {
+		quadrants := make(map[int]int)
+		for _, robot := range robots {
+			robot.Move(seconds, max)
+			quadrants[robot.Quadrant(max)]++
+		}
+		safetyFactors = append(safetyFactors, quadrants[1]*quadrants[2]*quadrants[3]*quadrants[4])
+	}
+
+	minSF := math.MaxInt
+	for _, value := range safetyFactors {
+		minSF = min(minSF, value)
+	}
+	// log.Info("", "SFs", safetyFactors, "minSF", minSF)
+	seconds := slices.Index(safetyFactors, minSF)
+	drawGrid(robots, max, seconds, minSF)
+
+	log.Warnf("(Part 2) \n")
+	return 0
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func drawGrid(robots []Robot, max v.Vector, seconds int, safetyFactor int) {
+	grid := g.New[*Robot](max)
+	log.Info("Grid", "max", grid.Count())
+	for _, robot := range robots {
+		robot.Move(seconds, max)
+		grid.SetValue(robot.Pos, &robot)
+	}
+	log.Info("", "grid", grid, "seconds", seconds, "safetyFactor", safetyFactor)
+}
+
+func avgRobots(robots []Robot) (avg v.Vector) {
+	for _, robot := range robots {
+		avg = avg.Add(robot.Pos)
+	}
+	return avg.Scale(1. / float64(len(robots)))
+}
+
+func distance(v1, v2 v.Vector) float64 {
+	return v1.Sub(v2).Abs()
 }

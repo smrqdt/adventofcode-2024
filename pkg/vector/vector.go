@@ -31,6 +31,10 @@ func (v Vector) Sub(v2 Vector) Vector {
 	return Vector{v.X - v2.X, v.Y - v2.Y}
 }
 
+func (v Vector) Scale(i float64) Vector {
+	return Vector{int(float64(v.X) * i), int(float64(v.Y) * i)}
+}
+
 func (v Vector) RotateRight() Vector {
 	return Vector{-v.Y, v.X}
 }
