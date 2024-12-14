@@ -146,7 +146,7 @@ func part1(garden g.Grid[*Region], regions s.Set[*Region]) {
 }
 
 func part2(garden g.Grid[*Region], regions s.Set[*Region]) {
-	defer helpers.TrackTime(time.Now(), "part1()")
+	defer helpers.TrackTime(time.Now(), "part2()")
 
 	for region := range regions {
 		for _, plot := range region.Plots {
