@@ -19,7 +19,7 @@ func New[T comparable]() (g Graph[T]) {
 func NewFromGridNeighbors[T comparable](grid g.Grid[*Node[T]], linkFunc func(n1, n2 *Node[T]) bool) (graph Graph[T], err error) {
 	for y, row := range grid {
 		for x, cell := range row {
-			neighs, err := grid.GetNeighbourValues(vector.Vector{X: x, Y: y})
+			neighs, _, err := grid.GetNeighbourValues(vector.Vector{X: x, Y: y}, vector.DIRECTIONS, false)
 			if err != nil {
 				return New[T](), err
 			}

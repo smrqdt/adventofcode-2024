@@ -8,5 +8,5 @@ import (
 
 func TrackTime(start time.Time, name string) {
 	elapsed := time.Since(start)
-	log.Warnf("%s took %s", name, elapsed)
+	log.Warnf("%s took %s\n", name, elapsed)
 }

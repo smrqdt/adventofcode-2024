@@ -10,6 +10,7 @@ import (
 	gr "github.com/smrqdt/adventofcode-2024/pkg/graph"
 	g "github.com/smrqdt/adventofcode-2024/pkg/grid"
 	"github.com/smrqdt/adventofcode-2024/pkg/set"
+	v "github.com/smrqdt/adventofcode-2024/pkg/vector"
 )
 
 //go:embed input
@@ -31,7 +32,7 @@ func parse() (graph gr.Graph[int]) {
 	})
 
 	for vec, node := range grid.All() {
-		neighs, err := grid.GetNeighbourValues(vec)
+		neighs, _, err := grid.GetNeighbourValues(vec, v.DIRECTIONS, false)
 		if err != nil {
 			panic(err)
 		}

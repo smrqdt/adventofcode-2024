@@ -68,21 +68,22 @@ func (g Grid[T]) Count() vector.Vector {
 	return vector.Vector{X: len(g[0]), Y: len(g)}
 }
 
-func (g Grid[T]) Value(v vector.Vector) (T, error) {
-	if !g.IsValid(v) {
-		return *new(T), fmt.Errorf("Vector %v is not in Grid %v: %w", v, g, OutOfBoundsError)
-	}
-	return g[v.Y][v.X], nil
-}
-
 func (g Grid[T]) SetValue(v vector.Vector, value T) error {
 	if !g.IsValid(v) {
-		return fmt.Errorf("Vector %v is not in Grid %v: %w", v, g, OutOfBoundsError)
+		return fmt.Errorf("Could not set value: Vector %v is not in Grid %#v: %w", v, g, OutOfBoundsError)
 	}
 	g[v.Y][v.X] = value
 	return nil
 }
 
+func (g Grid[T]) Value(v vector.Vector) (T, error) {
+	if !g.IsValid(v) {
+		return *new(T), fmt.Errorf("Could not read value: Vector %v is not in Grid %#v: %w", v, g, OutOfBoundsError)
+	}
+	return g[v.Y][v.X], nil
+}
+
+// Returns multiple Values and will skip Vectors, that are not part of the grid
 func (g Grid[T]) Values(vs []vector.Vector) (values []T, err error) {
 	for _, v := range vs {
 		value, err := g.Value(v)
@@ -146,40 +147,37 @@ func (g Grid[T]) GetNeighbour(v, dir vector.Vector) (neigh vector.Vector, exists
 	return neigh, true, nil
 }
 
-func (g Grid[T]) GetNeighbourValue(v, dir vector.Vector) (nVec vector.Vector, value T, exists bool, err error) {
-	nVec, exists, err = g.GetNeighbour(v, dir)
-	if err != nil || !exists {
-		return nVec, *new(T), exists, err
-	}
-	value, err = g.Value(nVec)
-	if err != nil {
-		return nVec, value, exists, err
-	}
-	return
-}
-
-func (g Grid[T]) GetNeighbours(v vector.Vector) (neighbours []vector.Vector, err error) {
-	for _, dir := range vector.DIRECTIONS {
+func (g Grid[T]) GetNeighbours(v vector.Vector, directions []vector.Vector, fixedLength bool) (neighbours []vector.Vector, ok []bool, err error) {
+	neighbours = make([]vector.Vector, 0, len(directions))
+	ok = make([]bool, 0, len(directions))
+	for _, dir := range directions {
 		neigh, exists, err := g.GetNeighbour(v, dir)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		if exists {
+		if exists || fixedLength {
+			ok = append(ok, exists)
 			neighbours = append(neighbours, neigh)
 		}
 	}
-	return neighbours, nil
+	return neighbours, ok, nil
 }
 
-func (g Grid[T]) GetNeighbourValues(v vector.Vector) (neighbours []T, err error) {
-	neighVectors, err := g.GetNeighbours(v)
+func (g Grid[T]) GetNeighbourValues(v vector.Vector, directions []vector.Vector, fixedLength bool) (neighbours []T, ok []bool, err error) {
+	neighVectors, ok, err := g.GetNeighbours(v, directions, fixedLength)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	neighbours, err = g.Values(neighVectors)
-	if err != nil {
-		return nil, err
+	for i, nVec := range neighVectors {
+		if ok[i] {
+			neighbour, err := g.Value(nVec)
+			if err != nil {
+				return nil, nil, err
+			}
+			neighbours = append(neighbours, neighbour)
+		} else if fixedLength {
+			neighbours = append(neighbours, *new(T))
+		}
 	}
-
-	return neighbours, nil
+	return neighbours, ok, nil
 }

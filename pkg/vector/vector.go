@@ -6,11 +6,17 @@ import (
 )
 
 var (
-	NORTH      = Vector{0, -1}
-	EAST       = Vector{1, 0}
-	SOUTH      = Vector{0, 1}
-	WEST       = Vector{-1, 0}
-	DIRECTIONS = []Vector{NORTH, EAST, SOUTH, WEST}
+	NORTH                     = Vector{0, -1}
+	EAST                      = Vector{1, 0}
+	SOUTH                     = Vector{0, 1}
+	WEST                      = Vector{-1, 0}
+	DIRECTIONS                = []Vector{NORTH, EAST, SOUTH, WEST}
+	NORTH_EAST                = Vector{1, -1}
+	SOUTH_EAST                = Vector{1, 1}
+	SOUTH_WEST                = Vector{-1, 1}
+	NORTH_WEST                = Vector{-1, -1}
+	DIAGONALS                 = []Vector{NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST}
+	DIRECTIONS_WITH_DIAGONALS = []Vector{NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST}
 )
 
 type Vector struct {
