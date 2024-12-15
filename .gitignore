@@ -28,3 +28,8 @@ go.work.sum
 input
 example
 *.input
+
+# vhs binaries
+*.mp4
+*.webm
+*.gif

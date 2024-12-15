@@ -52,5 +52,21 @@ func (v Vector) Abs() float64 {
 }
 
 func (v Vector) String() string {
-	return fmt.Sprintf("Vec(%d|%d)", v.X, v.Y)
+	return fmt.Sprintf("%c Vec(%d|%d)", v.Arrow(), v.X, v.Y)
+}
+
+func (v Vector) Arrow() rune {
+	if v == (Vector{}) {
+		return '•'
+	}
+
+	angle := v.Angle()
+	octant := int(math.Round(8*angle/(2*math.Pi)+8)) % 8
+
+	arrows := []rune{'⬆', '⬈', '➡', '⬊', '⬇', '⬋', '⬅', '⬉'}
+	return arrows[octant]
+}
+
+func (v Vector) Angle() float64 {
+	return math.Abs(math.Atan2(float64(v.X), float64(v.Y)) - math.Pi)
 }

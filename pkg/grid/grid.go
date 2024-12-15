@@ -52,6 +52,8 @@ func (g Grid[T]) String() string {
 					v = '.'
 				}
 				str = fmt.Sprintf("%s%c", str, v)
+			case string:
+				str += v
 			case int:
 				str = fmt.Sprintf("%s %3d", str, v)
 			default:
