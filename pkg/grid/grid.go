@@ -48,6 +48,9 @@ func (g Grid[T]) String() string {
 		for _, value := range row {
 			switch v := any(value).(type) {
 			case rune, byte:
+				if v == '\x00' {
+					v = '.'
+				}
 				str = fmt.Sprintf("%s%c", str, v)
 			case int:
 				str = fmt.Sprintf("%s %3d", str, v)
